@@ -131,8 +131,14 @@ class Hero {
     }
 }
 
+const getRandomCoordinates = (max) => {
+    // we'll use math.random to produce a random number
+    return Math.floor(Math.random() * max)
+}
+
 const player = new Hero(10, 10, 16, 16, 'lightsteelblue')
 const ogre = new Ogre(200, 50, 32, 48, '#bada55')
+const ogre2 = new Ogre(getRandomCoordinates(game.width), getRandomCoordinates(game.height), 64, 96, 'red')
 
 // player.render()
 // ogre.render()
@@ -144,24 +150,15 @@ const ogre = new Ogre(200, 50, 32, 48, '#bada55')
 // to accurately do this, we need to account for the entire space that one entity takes up.
 // this means using the player x, y, width and height
 // this also means using the ogre x, y, w, h
-const detectHit = () => {
+const detectHit = (thing) => {
     // we'll basically use a big if statement, to be able to tell if any of the sides
     // of our hero interact with any of the sides of our ogre
-    if (player.x < ogre.x + ogre.width
-        && player.x + player.width > ogre.x
-        && player.y < ogre.y + ogre.height
-        && player.y + player.height > ogre.y) {
+    if (player.x < thing.x + thing.width
+        && player.x + player.width > thing.x
+        && player.y < thing.y + thing.height
+        && player.y + player.height > thing.y) {
             console.log('HIT!')
-            // console.log('player x-> ', player.x)
-            // console.log('player width-> ', player.x + player.width)
-            // console.log('player y-> ', player.y)
-            // console.log('player height-> ', player.y + player.height)
-            // console.log('ogre x ->', ogre.x)
-            // console.log('ogre x width ->', ogre.x + ogre.width)
-            // console.log('ogre y ->', ogre.y)
-            // console.log('ogre y height ->', ogre.y + ogre.height)
-            ogre.alive = false
-            message.textContent = 'You Win!'
+            thing.alive = false
         }
 }
 
@@ -177,17 +174,22 @@ const gameLoop = () => {
     // console.log('the game loop is running')
     // for testing, it's ok to add them, but final should not have any
     // putting our hit detection at the top so it takes precedence
-    if (ogre.alive) {
-        detectHit()
-    }
+
     // to resemble movement, we should clear the old canvas every loop
     // then, instead of drawing a snake because it's maintaining all the old positions of our character
     // we'll just see our player square moving around
     ctx.clearRect(0, 0, game.width, game.height)
 
-    
     if (ogre.alive) {
         ogre.render()
+        detectHit(ogre)
+    } else if (ogre2.alive) {
+        message.textContent = 'Now Kill Shrek 2!'
+        ogre2.render()
+        detectHit(ogre2)
+    } else {
+        message.textContent = 'You win!'
+        stopGameLoop()
     }
 
     player.render()
@@ -213,9 +215,15 @@ document.addEventListener('keyup', (e) => {
     }
 })
 
+// we're going to save our game interval to a variable so we can stop it when we want to
+// this interval runs the game loop every 60ms until we tell it to stop
+const gameInterval = setInterval(gameLoop, 60)
+// fn that stops the game loop
+const stopGameLoop = () => { clearInterval(gameInterval) }
+
 // here we'll add an event listener, when the DOMcontent loads, run the game on an interval
 // eventually this event will have more in it.
 document.addEventListener('DOMContentLoaded', function () {
     // here is our gameloop interval
-    setInterval(gameLoop, 60)
+    gameInterval
 })
